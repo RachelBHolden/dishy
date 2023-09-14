@@ -5,7 +5,12 @@
     <h2><%= favourite.recipe.name %></h2>
     <p><%= favourite.recipe.description %></p>
     <!-- Add more details or styling as needed -->
-    <% end %>
+
+      <%= form_for favourite, url: favourite_path(favourite), method: :delete, html: { class: "remove-favorite-form" } do |f| %>
+      <%= f.submit "Remove", class: "remove-favorite-button" %>
+      <% end %>
+
+  <% end %>
     <div class="search-container">
       <%= form_tag(search_user_recipes_path, method: :get, class: "search-form") do %>
       <%= text_field_tag(:query, params[:query], placeholder: "Search recipes...") %>
