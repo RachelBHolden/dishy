@@ -1,0 +1,40 @@
+.favebg {
+  // background-image:  linear-gradient(rgba(0,0,0, 0) 0%, rgba(0,0,0, 1) 75%), url("Flour.jpg");
+  background-size: cover;
+  height: 100vh;
+  color: $white;
+  border: none;
+  background-color: $gray;
+}
+
+.container-fv {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.card-fv {
+  // background-size: cover;
+  background-position: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: $light-gray;
+  margin: 0px 12px;
+  margin-bottom: none;
+  // top/bottom left/right
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-gap: 5px;
+}
+
+@media (min-width: 100px) and (max-width: 575px) {
+  .cards {
+    grid-template-columns: 1fr;
+  }
+}

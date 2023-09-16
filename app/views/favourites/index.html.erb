@@ -1,23 +1,45 @@
-<h1>My Favourite Recipes</h1>
-<% @favourites.each do |favourite| %>
+<div class="container-fv favebg py-4">
+  <h1>Your Likes</h1>
 
-  <div>
-    <h2><%= favourite.recipe.name %></h2>
-    <p><%= favourite.recipe.description %></p>
-
-      <%= form_for favourite, url: favourite_path(favourite), method: :delete, html: { class: "remove-favorite-form" } do |f| %>
-      <%= f.submit "Remove", class: "remove-favorite-button" %>
-      <% end %>
-
-  <% end %>
-    <div class="search-container">
-      <%= form_tag(search_user_recipes_path, method: :get, class: "search-form") do %>
-      <%= text_field_tag(:query, params[:query], placeholder: "Search recipes...") %>
-      <%= submit_tag("Search") %>
-      <h2>Search for more Recipes</h2>
+  <% @favourites.each do |favourite| %>
+    <div>
+      <h2><%= favourite.recipe.name %></h2>
+      <p><%= favourite.recipe.description %></p>
+        <%= form_for favourite, url: favourite_path(favourite), method: :delete, html: { class: "remove-favorite-form" } do |f| %>
+        <%= f.submit "Remove", class: "remove-favorite-button" %>
+        <%= link_to "See more details", user_recipe_path(recipe) %>
+        <% end %>
     </div>
-  </div>
-<% end %>
-<%= link_to "Back to curated recipes", user_recipes_path, method: :get %>
+  <% end %>
 
-<%= render "shared/navbar" %>
+    <div class="cards py-4">
+      <div class="card-fv">
+        <h2>Recipe Title</h2>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+      </div>
+      <div class="container">
+        <%= link_to "Find more recipes", user_recipes_path, class: "button-8", method: :get %>
+        <%= link_to "Find more recipes", user_recipes_path, class: "button-8", method: :get %>
+      </div>
+    </div>
+
+    <div id="cover">
+      <%= form_tag(search_user_recipes_path, method: :get, class: "search-form") do %>
+
+        <%= text_field_tag(:query, params[:query], class: "search-input", placeholder: "Find your dish...") %>
+
+        <div id="">
+         <button><%= submit_tag "", class: "search-button" %><i class="fa-solid fa-magnifying-glass fa-2xl" style="color: black"></i></button>
+
+        </div>
+
+      <% end %>
+    </div>
+
+    <div class="container py-4">
+      <%= link_to "Find more recipes", user_recipes_path, class: "button-8", method: :get %>
+    </div>
+
+
+  <%= render "shared/navbar" %>
+</div>
