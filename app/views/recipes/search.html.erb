@@ -1,5 +1,5 @@
-<div class="container py-4">
-<h2>Search</h2>
+<div class="container py-4 center">
+  <h2>Search for more here</h2>
   <form action="<%= search_recipes_path %>" method="GET" class="mb-3">
     <div class="input-group">
       <input type="text" class="form-control" placeholder="Search for recipes" name="q">
@@ -8,19 +8,153 @@
       </button>
     </div>
   </form>
+</div>
 
-  <% @recipes.each do |recipe| %>
-    <div class="text-center">
-      <img src="<%= asset_path(recipe.photo_url) %>" >
-        <%= button_to favorites_path(recipe_id: recipe.id) do %>
-        <i class="far fa-heart"></i>
-      <% end %>
-      <%= link_to recipes_path(recipe) do %>
-        <i class="far fa-circle-xmark"></i>
-      <% end %>
-      <h2><%= recipe.name %></h2>
-      <%= link_to "See more details", recipe_path(recipe) %>
-    </div>
-  <% end %>
+  <div class="swiper">
+  <div class="swiper--status">
+    <i id="nope" class="fa fa-remove"></i>
+    <i id="love" class="fa fa-heart"></i>
+  </div>
+  <div class="swiper--cards">
+    <% @recipes.each do |recipe| %>
+      <div class="swiper--card swiper--buttons d-flex flex-column" style="background-image: url('<%= asset_path(recipe.photo_url) %>'); background-size: cover; padding-bottom:80px;" data-recipe-id="<%= recipe.id %>">
+        <div class="align-items-start mb-auto">
+          <h2><%= recipe.name %></h2>
+          <p><%= "#{recipe.time} mins" %></p>
+          <p><%= "#{recipe.ingredients.count} ingredients" %></p>
+        </div>
+        <div class="align-items-end">
+          <%= link_to "See more details", recipe_path(recipe) %>
+        </div>
+      </div>
+    <% end %>
+  </div>
 </div>
 <%= render "shared/navbar" %>
+
+<%# <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script> %>
+<script>
+'use strict';
+
+var swiperContainer = document.querySelector('.swiper');
+var allCards = document.querySelectorAll('.swiper--card');
+var nope = document.getElementById('nope');
+var love = document.getElementById('love');
+
+function initCards(card, index) {
+  var newCards = document.querySelectorAll('.swiper--card:not(.removed)');
+
+  newCards.forEach(function (card, index) {
+    card.style.zIndex = allCards.length - index;
+    card.style.transform = 'scale(' + (20 - index) / 20 + ') translateY(-' + 30 * index + 'px)';
+    card.style.opacity = (10 - index) / 10;
+  });
+
+  swiperContainer.classList.add('loaded');
+}
+
+initCards();
+
+allCards.forEach(function (el) {
+  var hammertime = new Hammer(el);
+
+  hammertime.on('pan', function (event) {
+    el.classList.add('moving');
+  });
+
+  hammertime.on('pan', function (event) {
+    if (event.deltaX === 0) return;
+    if (event.center.x === 0 && event.center.y === 0) return;
+
+    swiperContainer.classList.toggle('swiper_love', event.deltaX > 0);
+    swiperContainer.classList.toggle('swiper_nope', event.deltaX < 0);
+
+    var xMulti = event.deltaX * 0.03;
+    var yMulti = event.deltaY / 80;
+    var rotate = xMulti * yMulti;
+
+    event.target.style.transform = 'translate(' + event.deltaX + 'px, ' + event.deltaY + 'px) rotate(' + rotate + 'deg)';
+  });
+
+  hammertime.on('panend', function (event) {
+    el.classList.remove('moving');
+    swiperContainer.classList.remove('swiper_love');
+    swiperContainer.classList.remove('swiper_nope');
+
+    var moveOutWidth = document.body.clientWidth;
+    var keep = Math.abs(event.deltaX) < 80 || Math.abs(event.velocityX) < 0.5;
+
+    if (!keep) {
+      // If the user swipes right (likes the recipe), call the toggle_favorite action
+      if (event.deltaX > 0) {
+        var recipeId = el.getAttribute('data-recipe-id');
+        if (recipeId) {
+          // Make an AJAX request to toggle the favorite status
+          fetch('/recipes/' + recipeId + '/toggle_favorite', {
+            method: 'POST',
+            headers: {
+              'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+              'Content-Type': 'application/json'
+            },
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.status === 'success') {
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+          });
+        }
+      }
+    }
+
+    event.target.classList.toggle('removed', !keep);
+
+    if (keep) {
+      event.target.style.transform = '';
+    } else {
+      var endX = Math.max(Math.abs(event.velocityX) * moveOutWidth, moveOutWidth);
+      var toX = event.deltaX > 0 ? endX : -endX;
+      var endY = Math.abs(event.velocityY) * moveOutWidth;
+      var toY = event.deltaY > 0 ? endY : -endY;
+      var xMulti = event.deltaX * 0.03;
+      var yMulti = event.deltaY / 80;
+      var rotate = xMulti * yMulti;
+
+      event.target.style.transform = 'translate(' + toX + 'px, ' + (toY + event.deltaY) + 'px) rotate(' + rotate + 'deg)';
+      initCards();
+    }
+  });
+});
+
+function createButtonListener(love) {
+  return function (event) {
+    var cards = document.querySelectorAll('.swiper--card:not(.removed)');
+    var moveOutWidth = document.body.clientWidth * 1.5;
+
+    if (!cards.length) return false;
+
+    var card = cards[0];
+
+    card.classList.add('removed');
+
+    if (love) {
+      card.style.transform = 'translate(' + moveOutWidth + 'px, -100px) rotate(-30deg)';
+    } else {
+      card.style.transform = 'translate(-' + moveOutWidth + 'px, -100px) rotate(30deg)';
+    }
+
+    initCards();
+
+    event.preventDefault();
+  };
+}
+
+var nopeListener = createButtonListener(false);
+var loveListener = createButtonListener(true);
+
+nope.addEventListener('click', nopeListener);
+love.addEventListener('click', loveListener);
+
+</script>
